@@ -1,5 +1,5 @@
 from cvsslib.vector import calculate_vector
-from cvsslib import CVSS2State, CVSS3State,  cvss3, cvss2
+from cvsslib import CVSS2State, CVSS3State, CVSS31State, cvss31, cvss3, cvss2
 from cvsslib.utils import get_enums
 from cvsslib.example_vectors import v3_vectors, v2_vectors
 import pathlib
@@ -18,17 +18,31 @@ def split_vector(line):
     return vector, score
 
 
+@pytest.mark.parametrize('line', (data_dir / 'vectors_simple31').read_text().splitlines())
+def test_v3_vector_files_simple31(line):
+    vector, score = split_vector(line)
+    parsed = calculate_vector(vector)
+    assert parsed == score
+
+
 @pytest.mark.parametrize('line', (data_dir / 'vectors_simple3').read_text().splitlines())
 def test_v3_vector_files_simple3(line):
     vector, score = split_vector(line)
-    parsed = calculate_vector(vector, cvss3)
+    parsed = calculate_vector(vector)
+    assert parsed == score
+
+
+@pytest.mark.parametrize('line', (data_dir / 'vectors_random31').read_text().splitlines())
+def test_v3_vector_files_random31(line):
+    vector, score = split_vector(line)
+    parsed = calculate_vector(vector)
     assert parsed == score
 
 
 @pytest.mark.parametrize('line', (data_dir / 'vectors_random3').read_text().splitlines())
 def test_v3_vector_files_random3(line):
     vector, score = split_vector(line)
-    parsed = calculate_vector(vector, cvss3)
+    parsed = calculate_vector(vector)
     assert parsed == score
 
 
@@ -48,7 +62,7 @@ def test_v3_vector_files_random2(line):
 
 @pytest.mark.parametrize('vector, results', v3_vectors)
 def test_v3_vector(vector, results):
-    score = calculate_vector(vector, cvss3)
+    score = calculate_vector(vector)
     assert results == score, "Vector {0} failed".format(vector)
 
 
@@ -86,7 +100,7 @@ def test_mixin_vectors_v3(vector, expected):
     assert new_instance.calculate() == expected
 
 
-@pytest.mark.parametrize('cls,module', ((CVSS3State, cvss3), (CVSS2State, cvss2)))
+@pytest.mark.parametrize('cls,module', ((CVSS31State, cvss31), (CVSS3State, cvss3), (CVSS2State, cvss2)))
 def test_cvss_class_mixin(cls, module):
     # Test that an instance of every enum class is present within each of the state classes
     instance = cls()

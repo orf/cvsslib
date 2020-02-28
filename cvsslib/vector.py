@@ -1,6 +1,6 @@
 import operator
 
-from cvsslib import cvss3, cvss2
+from cvsslib import cvss31, cvss3, cvss2
 from cvsslib.utils import get_enums, run_calc
 
 
@@ -12,6 +12,8 @@ class VectorError(ValueError):
 def detect_vector(vector):
     if vector.startswith("CVSS:3.0"):
         module = cvss3
+    elif vector.startswith("CVSS:3.1"):
+        module = cvss31
     else:
         module = cvss2
 
@@ -45,10 +47,18 @@ def to_vector(module, getter):
     if module is cvss3:
         res = "CVSS:3.0/" + res
 
+    if module is cvss31:
+        res = "CVSS:3.1/" + res
+
     return res
 
 
-def calculate_vector(vector, module):
+def calculate_vector(vector, module=None):
+    if module is None:
+        module = detect_vector(vector)
+
+    module.calculate.VERSION = module.VERSION
+
     vector_values = parse_vector(vector, module)
 
     def _getter(enum_type):
@@ -63,9 +73,6 @@ def calculate_vector(vector, module):
 
 
 def parse_vector(vector, module=None, mandatory_error=True):
-    if module is None:
-        module = detect_vector(vector)
-
     vector_map, vector_values = {}, {}
     mandatory_keys, given_keys = set(), set()
     enums = dict(get_enums(module))
