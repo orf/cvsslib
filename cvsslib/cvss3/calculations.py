@@ -65,7 +65,7 @@ def calculate_modified_impact_sub_score(scope: ModifiedScope,
     if calculate.VERSION == 3:
         return IMPACT_CHANGED_COEFFECIENT * (modified - D("0.029")) - D("3.25") * D(math.pow(modified - D(0.02), 15))
 
-    if calculate.VERSION == 31:
+    if calculate.VERSION == 3.1:
         return IMPACT_CHANGED_COEFFECIENT * (modified - D("0.029")) - D("3.25") * D(math.pow(modified * D("0.9731") - D("0.02"), 13))
 
 
