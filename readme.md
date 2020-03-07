@@ -14,14 +14,14 @@ and calculation code. There are also some functions to manipulate vectors that t
 as arguments. E.G:
 
 ```python
-from cvsslib import cvss2, cvss3, calculate_vector
+from cvsslib import cvss2, cvss31, calculate_vector
 
 vector_v2 = "AV:L/AC:M/Au:S/C:N/I:P/A:C/E:U/RL:OF/RC:UR/CDP:N/TD:L/CR:H/IR:H/AR:H"
 calculate_vector(vector_v2, cvss2)
 >> (5, 3.5, 1.2)
 
 vector_v3 = "CVSS:3.0/AV:L/AC:L/PR:H/UI:R/S:U/C:H/I:N/A:H/MPR:N"
-calculate_vector(vector_v3, cvss3)
+calculate_vector(vector_v3, cvss31)
 >> (5.8, 5.8, 7.1)
 ```
 
