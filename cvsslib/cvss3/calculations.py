@@ -15,58 +15,80 @@ def roundup(num):
     return D(math.ceil(num * 10) / 10).quantize(D("0.1"))
 
 
-def calculate_exploitability_sub_score(attack_vector: AttackVector,
-                                       complexity: AttackComplexity,
-                                       privilege: PrivilegeRequired,
-                                       interaction: UserInteraction):
-    return EXPLOITABILITY_COEFFECIENT * attack_vector * complexity * privilege * interaction
+def calculate_exploitability_sub_score(
+    attack_vector: AttackVector,
+    complexity: AttackComplexity,
+    privilege: PrivilegeRequired,
+    interaction: UserInteraction,
+):
+    return (
+        EXPLOITABILITY_COEFFECIENT
+        * attack_vector
+        * complexity
+        * privilege
+        * interaction
+    )
 
 
-def calculate_modified_exploitability_sub_score(vector: ModifiedAttackVector,
-                                                complexity: ModifiedAttackComplexity,
-                                                privilege: ModifiedPrivilegesRequired,
-                                                interaction: ModifiedUserInteraction):
+def calculate_modified_exploitability_sub_score(
+    vector: ModifiedAttackVector,
+    complexity: ModifiedAttackComplexity,
+    privilege: ModifiedPrivilegesRequired,
+    interaction: ModifiedUserInteraction,
+):
     return EXPLOITABILITY_COEFFECIENT * vector * complexity * privilege * interaction
 
 
-def calculate_impact_sub_score(scope: Scope,
-                               conf_impact: ConfidentialityImpact,
-                               integ_impact: IntegrityImpact,
-                               avail_impact: AvailabilityImpact):
-    base_impact_sub_score = 1 - ((1 - conf_impact) * (1 - integ_impact) * (1 - avail_impact))
+def calculate_impact_sub_score(
+    scope: Scope,
+    conf_impact: ConfidentialityImpact,
+    integ_impact: IntegrityImpact,
+    avail_impact: AvailabilityImpact,
+):
+    base_impact_sub_score = 1 - (
+        (1 - conf_impact) * (1 - integ_impact) * (1 - avail_impact)
+    )
 
     if scope == Scope.UNCHANGED.value:
         return IMPACT_UNCHANGED_COEFFECIENT * base_impact_sub_score
     else:
         # What they hell are people smoking...
-        return IMPACT_CHANGED_COEFFECIENT *\
-               (base_impact_sub_score - D("0.029")) -\
-               D("3.25") * D(math.pow(base_impact_sub_score - D("0.02"), 15))
+        return IMPACT_CHANGED_COEFFECIENT * (base_impact_sub_score - D("0.029")) - D(
+            "3.25"
+        ) * D(math.pow(base_impact_sub_score - D("0.02"), 15))
 
 
-def calculate_modified_impact_sub_score(scope: ModifiedScope,
-                                        modified_conf: ModifiedConfidentialityImpact,
-                                        modified_integ: ModifiedIntegrityImpact,
-                                        modified_avail: ModifiedAvailabilityImpact,
-                                        conf_req: ConfidentialityRequirement,
-                                        integ_req: IntegrityRequirement,
-                                        avail_req: AvailabilityRequirement):
+def calculate_modified_impact_sub_score(
+    scope: ModifiedScope,
+    modified_conf: ModifiedConfidentialityImpact,
+    modified_integ: ModifiedIntegrityImpact,
+    modified_avail: ModifiedAvailabilityImpact,
+    conf_req: ConfidentialityRequirement,
+    integ_req: IntegrityRequirement,
+    avail_req: AvailabilityRequirement,
+    cvss_version,
+):
     modified = min(
-        1 -
-        (1 - modified_conf * conf_req) *
-        (1 - modified_integ * integ_req) *
-        (1 - modified_avail * avail_req),
-        D("0.915")
+        1
+        - (1 - modified_conf * conf_req)
+        * (1 - modified_integ * integ_req)
+        * (1 - modified_avail * avail_req),
+        D("0.915"),
     )
 
     if scope == ModifiedScope.UNCHANGED.value:
         return IMPACT_UNCHANGED_COEFFECIENT * modified
 
-    if calculate.VERSION == 3:
-        return IMPACT_CHANGED_COEFFECIENT * (modified - D("0.029")) - D("3.25") * D(math.pow(modified - D(0.02), 15))
-
-    if calculate.VERSION == 3.1:
-        return IMPACT_CHANGED_COEFFECIENT * (modified - D("0.029")) - D("3.25") * D(math.pow(modified * D("0.9731") - D("0.02"), 13))
+    if cvss_version == 3:
+        return IMPACT_CHANGED_COEFFECIENT * (modified - D("0.029")) - D("3.25") * D(
+            math.pow(modified - D(0.02), 15)
+        )
+    elif cvss_version == 3.1:
+        return IMPACT_CHANGED_COEFFECIENT * (modified - D("0.029")) - D("3.25") * D(
+            math.pow(modified * D("0.9731") - D("0.02"), 13)
+        )
+    else:
+        raise RuntimeError("Unknown CVSS version {}".format(cvss_version))
 
 
 def calculate_base_score(run_calculation, scope: Scope, privilege: PrivilegeRequired):
@@ -79,11 +101,15 @@ def calculate_base_score(run_calculation, scope: Scope, privilege: PrivilegeRequ
         override = {}
         if scope == Scope.CHANGED.value:
             # Ok, so the privilege enum needs slightly different values depending on the scope. God damn.
-            modified_privilege = PrivilegeRequired.extend("PrivilegeRequired", {"LOW": D("0.68"), "HIGH": D("0.50")})
+            modified_privilege = PrivilegeRequired.extend(
+                "PrivilegeRequired", {"LOW": D("0.68"), "HIGH": D("0.50")}
+            )
             privilege = getattr(modified_privilege, PrivilegeRequired(privilege).name)
             override[PrivilegeRequired] = privilege.value
 
-        exploitability_sub_score = run_calculation(calculate_exploitability_sub_score, override=override)
+        exploitability_sub_score = run_calculation(
+            calculate_exploitability_sub_score, override=override
+        )
 
         combined_score = impact_sub_score + exploitability_sub_score
 
@@ -93,19 +119,23 @@ def calculate_base_score(run_calculation, scope: Scope, privilege: PrivilegeRequ
             return roundup(min(combined_score, 10))
 
 
-def calculate_temporal_score(base_score,
-                             maturity: ExploitCodeMaturity,
-                             remediation: RemediationLevel,
-                             confidence: ReportConfidence):
+def calculate_temporal_score(
+    base_score,
+    maturity: ExploitCodeMaturity,
+    remediation: RemediationLevel,
+    confidence: ReportConfidence,
+):
     return roundup(base_score * maturity * remediation * confidence)
 
 
-def calculate_environmental_score(run_calculation,
-                                  modified_scope: ModifiedScope,
-                                  exploit_code: ExploitCodeMaturity,
-                                  remediation: RemediationLevel,
-                                  confidence: ReportConfidence,
-                                  privilege: ModifiedPrivilegesRequired):
+def calculate_environmental_score(
+    run_calculation,
+    modified_scope: ModifiedScope,
+    exploit_code: ExploitCodeMaturity,
+    remediation: RemediationLevel,
+    confidence: ReportConfidence,
+    privilege: ModifiedPrivilegesRequired,
+):
 
     modified_impact_sub_score = run_calculation(calculate_modified_impact_sub_score)
 
@@ -114,21 +144,39 @@ def calculate_environmental_score(run_calculation,
 
     if modified_scope == ModifiedScope.CHANGED.value:
         # Ok, so the privilege enum needs slightly different values depending on the scope. God damn.
-        modified_privilege = ModifiedPrivilegesRequired.extend("ModifiedPrivilegeRequired", {"LOW": D("0.68"), "HIGH": D("0.50")})
-        privilege = getattr(modified_privilege, ModifiedPrivilegesRequired(privilege).name).value
+        modified_privilege = ModifiedPrivilegesRequired.extend(
+            "ModifiedPrivilegeRequired", {"LOW": D("0.68"), "HIGH": D("0.50")}
+        )
+        privilege = getattr(
+            modified_privilege, ModifiedPrivilegesRequired(privilege).name
+        ).value
 
-    modified_exploitability_sub_score = run_calculation(calculate_modified_exploitability_sub_score,
-                                                        override={ModifiedPrivilegesRequired: privilege})
+    modified_exploitability_sub_score = run_calculation(
+        calculate_modified_exploitability_sub_score,
+        override={ModifiedPrivilegesRequired: privilege},
+    )
 
     if modified_scope == ModifiedScope.UNCHANGED.value:
         return roundup(
-            roundup(min(modified_impact_sub_score + modified_exploitability_sub_score, 10)) *
-            exploit_code * remediation * confidence
+            roundup(
+                min(modified_impact_sub_score + modified_exploitability_sub_score, 10)
+            )
+            * exploit_code
+            * remediation
+            * confidence
         )
     else:
         return roundup(
-            roundup(min(D("1.08") * (modified_impact_sub_score + modified_exploitability_sub_score), 10)) *
-            exploit_code * remediation * confidence
+            roundup(
+                min(
+                    D("1.08")
+                    * (modified_impact_sub_score + modified_exploitability_sub_score),
+                    10,
+                )
+            )
+            * exploit_code
+            * remediation
+            * confidence
         )
 
 
@@ -147,6 +195,8 @@ def calculate(run_calculation, get):
             parent_enum_value = get(parent_enum_class)
             override[optional_enum] = parent_enum_value.value
 
-    environment_score = run_calculation(calculate_environmental_score, override=override)
+    environment_score = run_calculation(
+        calculate_environmental_score, override=override
+    )
 
     return float(base_score), float(temporal_score), float(environment_score)

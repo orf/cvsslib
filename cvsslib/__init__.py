@@ -3,9 +3,7 @@ from . import cvss3, cvss2
 
 
 def make_display_name(str):
-    return " ".join(
-        s.capitalize() for s in str.lower().split("_")
-    )
+    return " ".join(s.capitalize() for s in str.lower().split("_"))
 
 
 class CVSS2State(class_mixin(cvss2)):
@@ -21,4 +19,3 @@ class CVSS31State(class_mixin(cvss31)):
 
 
 from .vector import parse_vector, calculate_vector
-
