@@ -3,20 +3,17 @@ from cvsslib.base_enum import NotDefined
 
 VERSION = 2
 
-def calculate_impact(conf: ConfidentialityImpact,
-                     integ: IntegrityImpact,
-                     avail: AvailabilityImpact):
+
+def calculate_impact(
+    conf: ConfidentialityImpact, integ: IntegrityImpact, avail: AvailabilityImpact
+):
     # Impact = 10.41*(1-(1-ConfImpact)*(1-IntegImpact)*(1-AvailImpact))
-    return D("10.41") * \
-           (1 -
-            (1 - conf) *
-            (1 - integ) *
-            (1 - avail))
+    return D("10.41") * (1 - (1 - conf) * (1 - integ) * (1 - avail))
 
 
-def calculate_exploitability(access: AccessVector,
-                             complexity: AccessComplexity,
-                             auth: Authentication):
+def calculate_exploitability(
+    access: AccessVector, complexity: AccessComplexity, auth: Authentication
+):
     # Exploitability = 20* AccessVector*AccessComplexity*Authentication
     return D("20") * access * complexity * auth
 
@@ -34,29 +31,35 @@ def calculate_base_score(run_calculation, impact_function):
 
 
 # emporalScore = round_to_1_decimal(BaseScore*Exploitability*RemediationLevel*ReportConfidence)
-def calculate_temporal_score(base_score,
-                             exploit: Exploitability,
-                             remediation: RemediationLevel,
-                             confidence: ReportConfidence):
+def calculate_temporal_score(
+    base_score,
+    exploit: Exploitability,
+    remediation: RemediationLevel,
+    confidence: ReportConfidence,
+):
     return round(base_score * exploit * remediation * confidence, 1)
 
 
 # AdjustedImpact = min(10,10.41*(1-(1-ConfImpact*ConfReq)*(1-IntegImpact*IntegReq)*(1-AvailImpact*AvailReq)))
-def calculate_adjusted_impact(conf_impact: ConfidentialityImpact,
-                              conf_req: ConfidentialityRequirement,
-                              integ_impact: IntegrityImpact,
-                              integ_req: IntegrityRequirement,
-                              avail_impact: AvailabilityImpact,
-                              avail_req: AvailabilityRequirement):
+def calculate_adjusted_impact(
+    conf_impact: ConfidentialityImpact,
+    conf_req: ConfidentialityRequirement,
+    integ_impact: IntegrityImpact,
+    integ_req: IntegrityRequirement,
+    avail_impact: AvailabilityImpact,
+    avail_req: AvailabilityRequirement,
+):
     return min(
         10,
-        D("10.41") * (
-            1 - (
-                (1 - conf_impact * conf_req) *
-                (1 - integ_impact * integ_req) *
-                (1 - avail_impact * avail_req)
+        D("10.41")
+        * (
+            1
+            - (
+                (1 - conf_impact * conf_req)
+                * (1 - integ_impact * integ_req)
+                * (1 - avail_impact * avail_req)
             )
-        )
+        ),
     )
 
 
@@ -65,17 +68,18 @@ def calculate_adjusted_impact(conf_impact: ConfidentialityImpact,
 #
 # AdjustedTemporal = TemporalScore recomputed with the BaseScores Impact sub-equation
 #   replaced with the AdjustedImpact equation
-def calculate_environmental_score(run_calculation,
-                                  collat_damage: CollateralDamagePotential,
-                                  target_dist: TargetDistribution):
-    adjusted_base_score = run_calculation(calculate_base_score, calculate_adjusted_impact)
+def calculate_environmental_score(
+    run_calculation,
+    collat_damage: CollateralDamagePotential,
+    target_dist: TargetDistribution,
+):
+    adjusted_base_score = run_calculation(
+        calculate_base_score, calculate_adjusted_impact
+    )
     adjusted_temporal = run_calculation(calculate_temporal_score, adjusted_base_score)
 
     return round(
-        (adjusted_temporal +
-         (10 - adjusted_temporal) *
-         collat_damage) *
-        target_dist, 1
+        (adjusted_temporal + (10 - adjusted_temporal) * collat_damage) * target_dist, 1
     )
 
 
@@ -84,7 +88,11 @@ def calculate(run_calculation, get):
     # environmental score
     base_score = run_calculation(calculate_base_score, calculate_impact)
 
-    temporal_metrics = {get(Exploitability), get(RemediationLevel), get(ReportConfidence)}
+    temporal_metrics = {
+        get(Exploitability),
+        get(RemediationLevel),
+        get(ReportConfidence),
+    }
     if all(isinstance(e.value, NotDefined) for e in temporal_metrics):
         temporal_score = None
     else:

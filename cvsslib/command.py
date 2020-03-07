@@ -5,8 +5,14 @@ import argparse
 
 def main():
     parser = argparse.ArgumentParser(description="Calculate CVSS scores from a vector")
-    parser.add_argument('vector')
-    parser.add_argument('-v', default=None, dest="version", type=int, help="CVSS version to use (default: autodetect)")
+    parser.add_argument("vector")
+    parser.add_argument(
+        "-v",
+        default=None,
+        dest="version",
+        type=int,
+        help="CVSS version to use (default: autodetect)",
+    )
     args = parser.parse_args()
 
     module = None

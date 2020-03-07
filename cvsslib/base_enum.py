@@ -14,9 +14,7 @@ class NotDefined(object):
 
 
 def make_display_name(str):
-    return " ".join(
-        s.capitalize() for s in str.lower().split("_")
-    )
+    return " ".join(s.capitalize() for s in str.lower().split("_"))
 
 
 class BaseEnum(enum.Enum):
@@ -31,15 +29,17 @@ class BaseEnum(enum.Enum):
         options = {
             line.split(":")[0].lower().strip(): line.split(":")[1].strip()
             for line in lines
-            }
+        }
         return options
 
     @classmethod
     def members(self):
         return (
-            (name, value) for name, value in self.__members__.items() if not name.startswith("_")
+            (name, value)
+            for name, value in self.__members__.items()
+            if not name.startswith("_")
         )
-    
+
     @classmethod
     def get_default(cls):
         if hasattr(cls, "NOT_DEFINED"):
@@ -95,16 +95,19 @@ class BaseEnum(enum.Enum):
 
     @classmethod
     def choices(cls):
-        return [(value.value if not isinstance(value.value, NotDefined) else value.value.value,
-                 make_display_name(name)) for name, value in cls.members()]
+        return [
+            (
+                value.value
+                if not isinstance(value.value, NotDefined)
+                else value.value.value,
+                make_display_name(name),
+            )
+            for name, value in cls.members()
+        ]
 
     @classmethod
     def extend(cls, name, extra, doc="", mod=None):
-        new_cls = enum.Enum(
-            value=name,
-            names=cls.to_mapping(extra),
-            type=BaseEnum
-        )
+        new_cls = enum.Enum(value=name, names=cls.to_mapping(extra), type=BaseEnum)
         new_cls._parent = cls
         new_cls.__doc__ = doc or cls.__doc__
         new_cls.__module__ = mod or cls.__module__
@@ -112,10 +115,7 @@ class BaseEnum(enum.Enum):
 
     @classmethod
     def to_mapping(cls, extra=None):
-        returner = {
-            name: value.value
-            for name, value in cls.members()
-        }
+        returner = {name: value.value for name, value in cls.members()}
 
         if extra:
             returner.update(extra)

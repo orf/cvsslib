@@ -6,12 +6,9 @@ class TempEnum(BaseEnum):
     NOT_DEFINED = NotDefined(1)
 
 
-new_enum = TempEnum.extend("NewEnum", {
-    "SOME_OTHER_VALUE": 2,
-    "_vectors": {
-        "SOV": "SOME_OTHER_VALUE"
-    }
-})
+new_enum = TempEnum.extend(
+    "NewEnum", {"SOME_OTHER_VALUE": 2, "_vectors": {"SOV": "SOME_OTHER_VALUE"}}
+)
 
 
 def test_not_defined_value():

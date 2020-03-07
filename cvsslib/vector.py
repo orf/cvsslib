@@ -23,7 +23,7 @@ def detect_vector(vector):
 def to_vector(module, getter):
     vectors = []
 
-    ordering = getattr(module, 'ORDERING', None)
+    ordering = getattr(module, "ORDERING", None)
 
     for name, enum in get_enums(module):
         enum_attr = getter(enum)
@@ -57,8 +57,6 @@ def calculate_vector(vector, module=None):
     if module is None:
         module = detect_vector(vector)
 
-    module.calculate.VERSION = module.VERSION
-
     vector_values = parse_vector(vector, module)
 
     def _getter(enum_type):
@@ -69,7 +67,7 @@ def calculate_vector(vector, module=None):
 
         return ret
 
-    return run_calc(module.calculate, getter=_getter)
+    return run_calc(module.calculate, getter=_getter, cvss_version=module.VERSION)
 
 
 def parse_vector(vector, module=None, mandatory_error=True):
@@ -97,7 +95,9 @@ def parse_vector(vector, module=None, mandatory_error=True):
             continue  # CVSS3 is prefixed with CVSS:3.0/
 
         if key not in vector_map:
-            raise VectorError("Unknown key {0} in {1} vector".format(key, module.__name__))
+            raise VectorError(
+                "Unknown key {0} in {1} vector".format(key, module.__name__)
+            )
 
         enum = vector_map[key]
         try:

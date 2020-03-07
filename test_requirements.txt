@@ -1,4 +1,0 @@
-django-enumfields
-pytest-django
-pathlib
-pytest-xdist

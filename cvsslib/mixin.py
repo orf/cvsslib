@@ -14,7 +14,9 @@ class BaseCVSSUtilsMixin(object):
     def debug(self):
         result = []
 
-        ordered_enums = sorted(get_enums(self, only_classes=False), key=operator.itemgetter(0))
+        ordered_enums = sorted(
+            get_enums(self, only_classes=False), key=operator.itemgetter(0)
+        )
         for name, value in ordered_enums:
             result.append("{name} = {value}".format(name=name, value=value))
 
@@ -58,7 +60,9 @@ def utils_mixin(module, enum_map):
     calculate_func = getattr(module, "calculate", None)
 
     if not calculate_func:
-        raise RuntimeError("Cannot find 'calculate' method in {module}".format(module=module))
+        raise RuntimeError(
+            "Cannot find 'calculate' method in {module}".format(module=module)
+        )
 
     class CVSSUtilsMixin(BaseCVSSUtilsMixin):
         ENUM_MODULE = module
@@ -69,7 +73,9 @@ def utils_mixin(module, enum_map):
 
         # Make the 'calculate' method
         def calculate(self):
-            return run_calc(calculate_func, getter=self._getter)
+            return run_calc(
+                calculate_func, cvss_version=module.VERSION, getter=self._getter
+            )
 
         def to_vector(self):
             return to_vector(module, self._getter)

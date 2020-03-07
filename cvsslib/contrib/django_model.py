@@ -12,6 +12,7 @@ class KeyedEnumField(EnumField):
     """
     An enum field that stores the names of the values as strings, rather than the values.
     """
+
     def get_prep_value(self, value):
         if isinstance(value, str):
             return value
@@ -40,18 +41,22 @@ def django_mixin(module, base=ModelBase, attr_name=None):
 
     def field_callback(name, enum_cls):
         choices = enum_cls.choices()
-        nullable = any((isinstance(o, NotDefined) and o.value.value is None) or
-                       o.value is None for o in enum_cls)
+        nullable = any(
+            (isinstance(o, NotDefined) and o.value.value is None) or o.value is None
+            for o in enum_cls
+        )
 
         max_length = max(len(o.name) for o in enum_cls)
 
         default = enum_cls.get_default()
 
-        return KeyedEnumField(enum_cls,
-                              choices=choices,
-                              default=default.name,
-                              max_length=max_length,
-                              null=nullable)
+        return KeyedEnumField(
+            enum_cls,
+            choices=choices,
+            default=default.name,
+            max_length=max_length,
+            null=nullable,
+        )
 
     mixin_data, enum_map = cvss_mixin_data(module, field_callback)
     Utils = utils_mixin(module, enum_map)
@@ -59,9 +64,11 @@ def django_mixin(module, base=ModelBase, attr_name=None):
     class DjangoUtils(Utils):
         def debug(self):
             result = []
-            fields = [(field.attname, getattr(self, field.attname))
-                      for field in self._meta.get_fields()
-                      if isinstance(field, KeyedEnumField)]
+            fields = [
+                (field.attname, getattr(self, field.attname))
+                for field in self._meta.get_fields()
+                if isinstance(field, KeyedEnumField)
+            ]
 
             ordered_enums = sorted(fields, key=operator.itemgetter(0))
             for name, value in ordered_enums:

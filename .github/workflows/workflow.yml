@@ -1,0 +1,20 @@
+name: Main workflow
+on: [push, pull_request]
+jobs:
+  run:
+    name: Run
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: "${{ matrix.python-version }}"
+      - name: install poetry
+        run: pip3 install poetry
+      - name: install
+        run: poetry install
+      - name: Run pytest
+        run: poetry run pytest -l -n auto -x

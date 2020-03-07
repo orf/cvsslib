@@ -1,5 +1,9 @@
 import pytest
-from django_app.app.models import v2Model, v3Model, namedModel  # Ensure you are running py.test in the tests/ directory.
+from django_app.app.models import (
+    v2Model,
+    v3Model,
+    namedModel,
+)  # Ensure you are running py.test in the tests/ directory.
 
 from cvsslib import cvss2, cvss3, parse_vector
 from cvsslib.base_enum import BaseEnum, NotDefined
@@ -29,13 +33,12 @@ def test_field():
 @pytest.mark.django_db
 def test_models():
     for vectors, module, model in [
-        (v3_vectors, cvss3, v3Model), (v2_vectors, cvss2, v2Model)
+        (v3_vectors, cvss3, v3Model),
+        (v2_vectors, cvss2, v2Model),
     ]:
         for vector, expected in vectors:
             inst = model()
-            inst.from_vector(
-                parse_vector(vector, module)
-            )
+            inst.from_vector(parse_vector(vector, module))
             inst.save()
 
             assert inst.calculate() == expected
