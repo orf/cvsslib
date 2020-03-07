@@ -9,7 +9,7 @@ and have it work with the same API, and with the same bells and whistles.
 
 ## API
 
-It's pretty simple to use. `cvsslib` has a `cvss2` and `cvss3` sub modules that contains all of the enums
+It's pretty simple to use. `cvsslib` has a `cvss2`, `cvss3` and `cvss31` sub modules that contains all of the enums
 and calculation code. There are also some functions to manipulate vectors that take these cvss modules
 as arguments. E.G:
 
@@ -25,7 +25,7 @@ calculate_vector(vector_v3, cvss31)
 >> (5.8, 5.8, 7.1)
 ```
 
-You can access every CVSS enum through the `cvss2` or `cvss3` modules:
+You can access every CVSS enum through the `cvss2`, `cvss3` or `cvss31` modules:
 
 ```python
 from cvsslib import cvss2
