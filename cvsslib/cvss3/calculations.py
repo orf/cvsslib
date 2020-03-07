@@ -4,6 +4,7 @@ from .enums import *
 from decimal import Decimal as D
 from cvsslib.base_enum import NotDefined
 
+VERSION = 3
 
 EXPLOITABILITY_COEFFECIENT = D("8.22")
 IMPACT_UNCHANGED_COEFFECIENT = D("6.42")
@@ -60,8 +61,12 @@ def calculate_modified_impact_sub_score(scope: ModifiedScope,
 
     if scope == ModifiedScope.UNCHANGED.value:
         return IMPACT_UNCHANGED_COEFFECIENT * modified
-    else:
+
+    if calculate.VERSION == 3:
         return IMPACT_CHANGED_COEFFECIENT * (modified - D("0.029")) - D("3.25") * D(math.pow(modified - D(0.02), 15))
+
+    if calculate.VERSION == 3.1:
+        return IMPACT_CHANGED_COEFFECIENT * (modified - D("0.029")) - D("3.25") * D(math.pow(modified * D("0.9731") - D("0.02"), 13))
 
 
 def calculate_base_score(run_calculation, scope: Scope, privilege: PrivilegeRequired):

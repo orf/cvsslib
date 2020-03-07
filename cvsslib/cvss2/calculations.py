@@ -1,6 +1,7 @@
 from .enums import *
 from cvsslib.base_enum import NotDefined
 
+VERSION = 2
 
 def calculate_impact(conf: ConfidentialityImpact,
                      integ: IntegrityImpact,

@@ -1,5 +1,5 @@
 from cvsslib.vector import detect_vector, calculate_vector, VectorError
-from cvsslib import cvss2, cvss3
+from cvsslib import cvss2, cvss3, cvss31
 import argparse
 
 
@@ -12,7 +12,7 @@ def main():
     module = None
 
     if args.version is not None:
-        module = {2: cvss2, 3: cvss3}[args.version]
+        module = {2: cvss2, 3: cvss3, 31: cvss31}[args.version]
     else:
         module = detect_vector(args.vector)
 
