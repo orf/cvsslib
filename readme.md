@@ -1,4 +1,4 @@
-# CVSSlib ![Main workflow](https://github.com/orf/cvsslib/workflows/Main%20workflow/badge.svg)
+# CVSSlib ![Main workflow](https://github.com/orf/cvsslib/workflows/Tests/badge.svg)
 
 A Python 3 library for calculating CVSS v2, CVSS v3 and CVSS v3.1 vectors, with tests. Examples on how to use
 the library is shown below, and there is some documentation on the internals within the `docs` directory. The library 
