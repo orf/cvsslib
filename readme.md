@@ -1,6 +1,6 @@
-# CVSSlib [![Build Status](https://travis-ci.org/ctxis/cvsslib.svg?branch=master)](https://travis-ci.org/ctxis/cvsslib)
+# CVSSlib ![Main workflow](https://github.com/orf/cvsslib/workflows/Main%20workflow/badge.svg)
 
-A Python 3 library for calculating CVSS v2 and CVSS v3 vectors, with tests. Examples on how to use
+A Python 3 library for calculating CVSS v2, CVSS v3 and CVSS v3.1 vectors, with tests. Examples on how to use
 the library is shown below, and there is some documentation on the internals within the `docs` directory. The library 
 is designed to be completely extendable, so it is possible to implement your own custom scoring systems (or those of your clients)
 and have it work with the same API, and with the same bells and whistles.
